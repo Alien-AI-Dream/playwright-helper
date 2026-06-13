@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-  console.log('=== SIDEPANEL DOM LOADED ===');
 
   // =====================================================
   // THEME MANAGER — 10-theme cycling system
@@ -39,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function () {
       this.applyTheme(this.currentThemeId);
       this.generateParticles();
       this.bindEvents();
-      console.log('[THEME] Initialized with theme:', this.themes[this.currentIndex].name);
     }
 
     async loadTheme() {
@@ -202,10 +200,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const saveElementBtn = document.getElementById('saveElementBtn');
   const saveContainerBtn = document.getElementById('saveContainerBtn');
 
-  console.log('[INIT] saveElementBtn:', saveElementBtn);
-  console.log('[INIT] saveElementBtn disabled:', saveElementBtn?.disabled);
-  console.log('[INIT] saveContainerBtn:', saveContainerBtn);
-  console.log('[INIT] saveContainerBtn disabled:', saveContainerBtn?.disabled);
 
   let isWaitingForElement = false;
   let currentElementData = null;
@@ -611,7 +605,6 @@ document.addEventListener('DOMContentLoaded', function () {
   function showToast(type, message) {
     const toastContainer = document.getElementById('toastContainer');
     if (!toastContainer) {
-      console.log(`[Toast ${type}]`, message);
       return;
     }
 
@@ -629,39 +622,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // PageObject 管理功能初始化
   async function initPageObjectManagement() {
-    console.log('[PO-INIT] Starting PageObject initialization...');
 
     try {
       // 初始化 PageObjectManager
       if (window.pageObjectManager) {
         await window.pageObjectManager.initialize();
-        console.log('[PO-INIT] PageObjectManager initialized');
       }
 
       // 初始化 PageObjectUIManager
       if (window.pageObjectUIManager) {
         await window.pageObjectUIManager.initialize(window.pageObjectManager);
-        console.log('[PO-INIT] PageObjectUIManager initialized');
       }
 
       // 查看 PageObject 按钮事件
       if (viewPageObjectBtn) {
         viewPageObjectBtn.addEventListener('click', () => {
-          console.log('[VIEW-PO] View button clicked');
           if (window.pageObjectUIManager) {
             window.pageObjectUIManager.showViewerModal();
           }
         });
-        console.log('[PO-INIT] View listener attached');
       }
 
       // 保存元素按钮事件
       if (saveElementBtn) {
         saveElementBtn.addEventListener('click', async () => {
-          console.log('[SAVE-ELEM] Button clicked');
-          console.log('[SAVE-ELEM] pageObjectUIManager:', !!window.pageObjectUIManager);
-          console.log('[SAVE-ELEM] currentElementData:', !!currentElementData);
-          console.log('[SAVE-ELEM] currentLocators:', currentLocators?.length || 0);
 
           if (!window.pageObjectUIManager) {
             showToast('error', 'PageObject UI not initialized');
@@ -678,22 +662,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
           try {
             await window.pageObjectUIManager.showSaveElementModal(currentElementData, currentLocators);
-            console.log('[SAVE-ELEM] Modal shown');
           } catch (error) {
             console.error('[SAVE-ELEM] Error:', error);
             showToast('error', 'Failed to open dialog: ' + error.message);
           }
         });
-        console.log('[PO-INIT] Save listener attached');
       }
 
       // 保存 Container 按钮事件
       if (saveContainerBtn) {
         saveContainerBtn.addEventListener('click', async () => {
-          console.log('[SAVE-CONTAINER] Button clicked');
-          console.log('[SAVE-CONTAINER] pageObjectUIManager:', !!window.pageObjectUIManager);
-          console.log('[SAVE-CONTAINER] currentElementData:', !!currentElementData);
-          console.log('[SAVE-CONTAINER] currentLocators:', currentLocators?.length || 0);
 
           if (!window.pageObjectUIManager) {
             showToast('error', 'PageObject UI not initialized');
@@ -710,25 +688,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
           try {
             await window.pageObjectUIManager.showSaveContainerModal(currentElementData, currentLocators);
-            console.log('[SAVE-CONTAINER] Modal shown');
           } catch (error) {
             console.error('[SAVE-CONTAINER] Error:', error);
             showToast('error', 'Failed to open dialog: ' + error.message);
           }
         });
-        console.log('[PO-INIT] Save Container listener attached');
       }
 
       // 添加手动定位器按钮事件
       if (addLocatorBtn) {
         addLocatorBtn.addEventListener('click', () => {
-          console.log('[ADD-LOCATOR] Add manual locator button clicked');
           addManualLocatorInput();
         });
-        console.log('[PO-INIT] Add locator listener attached');
       }
 
-      console.log('[PO-INIT] PageObject management initialized');
     } catch (error) {
       console.error('[PO-INIT] Error:', error);
     }
@@ -742,5 +715,4 @@ document.addEventListener('DOMContentLoaded', function () {
   window.deleteLocator = deleteLocator;
   window.addManualLocatorInput = addManualLocatorInput;
 
-  console.log('Playwright Locator Helper sidepanel initialized');
 });

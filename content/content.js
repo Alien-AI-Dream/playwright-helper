@@ -1,5 +1,4 @@
 // Playwright Locator Helper - Enhanced Content Script
-console.log('🎯 Playwright Locator Helper content script loading...');
 
 // 状态管理
 let isSelecting = false;
@@ -15,7 +14,6 @@ if (document.readyState === 'loading') {
 function initializeContentScript() {
     // 防止重复注入
     if (window.playwrightLocatorHelperLoaded) {
-        console.log('Content script already loaded, skipping...');
         try {
             // 回复 ping 请求表明已加载
             chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -25,31 +23,26 @@ function initializeContentScript() {
                 }
             });
         } catch (e) {
-            console.log("Could not register ping listener");
         }
         return;
     }
     
     window.playwrightLocatorHelperLoaded = true;
-    console.log('Content script initializing...');
 
     // 监听来自sidepanel的消息
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        console.log('Content script received message:', request);
 
         try {
             let action = typeof request === 'string' ? request : request.action;
 
             // Ping测试 - 用于检查连接
             if (action === "ping") {
-                console.log('Ping received, responding...');
                 sendResponse({ status: "content_script_ready", timestamp: Date.now() });
                 return true;
             }
 
             // 开始选择模式
             if (action === "startSelecting") {
-                console.log('Starting selection mode');
                 startSelectionMode();
                 sendResponse({ status: "selection_started" });
                 return true;
@@ -57,7 +50,6 @@ function initializeContentScript() {
 
             // 停止选择模式
             if (action === "stopSelecting") {
-                console.log('Stopping selection mode');
                 stopSelectionMode();
                 sendResponse({ status: "selection_stopped" });
                 return true;
@@ -65,7 +57,6 @@ function initializeContentScript() {
 
             // 验证定位器
             if (action === "validateLocator") {
-                console.log('Validating locator:', request.locator);
                 validateLocator(request.locator, sendResponse);
                 return true; // 异步响应
             }
@@ -82,10 +73,8 @@ function initializeContentScript() {
     try {
         chrome.runtime.sendMessage({ action: "contentScriptReady" });
     } catch (error) {
-        console.log("Could not send ready message to background script:", error);
     }
     
-    console.log('✅ Content script initialized successfully');
 }
 
 // ========== 元素选择功能 ==========
@@ -93,14 +82,12 @@ function initializeContentScript() {
 function startSelectionMode() {
     isSelecting = true;
     document.body.style.cursor = 'crosshair';
-    console.log('Selection mode activated');
 }
 
 function stopSelectionMode() {
     isSelecting = false;
     document.body.style.cursor = 'default';
     removeAllHighlights();
-    console.log('Selection mode deactivated');
 }
 
 // 点击事件 - 选择元素
@@ -111,11 +98,9 @@ document.addEventListener('click', (event) => {
     event.stopPropagation();
     
     const element = event.target;
-    console.log('Element clicked:', element);
     
     // 提取元素信息
     const elementInfo = extractElementInfo(element);
-    console.log('Element info extracted:', elementInfo);
     
     // 停止选择模式
     stopSelectionMode();
@@ -129,7 +114,6 @@ document.addEventListener('click', (event) => {
             if (chrome.runtime.lastError) {
                 console.error('Failed to send element info:', chrome.runtime.lastError);
             } else {
-                console.log('Element info sent successfully');
             }
         });
     } catch (error) {
@@ -227,7 +211,6 @@ function extractElementInfo(element) {
 
 function validateLocator(locatorExpression, sendResponse) {
     try {
-        console.log('Validating locator:', locatorExpression);
         removeAllHighlights();
         
         let selector = null;
@@ -535,11 +518,9 @@ function removeAllHighlights() {
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && isSelecting) {
         stopSelectionMode();
-        console.log('Selection cancelled by Esc key');
     }
 });
 
-console.log('Content script setup complete');
 
 // ========== Playwright Locator Generator ==========
 // 将定位器生成器放在 content script 中，因为 background script 没有 window 对象

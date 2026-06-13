@@ -19,7 +19,6 @@
   * Extension installation/update handler
   */
  chrome.runtime.onInstalled.addListener((details) => {
-     console.log(`${EXTENSION_NAME} v${EXTENSION_VERSION} installed`);
      
      switch (details.reason) {
          case 'install':
@@ -30,7 +29,6 @@
              break;
          case 'chrome_update':
          case 'shared_module_update':
-             console.log('Chrome or shared module updated');
              break;
      }
  });
@@ -39,7 +37,6 @@
   * Handle first-time installation
   */
  async function handleInstallation() {
-     console.log('First-time installation detected');
      
      try {
          // Set default settings
@@ -60,7 +57,6 @@
   * Handle extension updates
   */
  async function handleUpdate(previousVersion) {
-     console.log(`Updated from version ${previousVersion} to ${EXTENSION_VERSION}`);
      
      try {
          // Migrate settings if necessary
@@ -109,7 +105,6 @@
          playwrightLocatorSettings: defaultSettings
      });
      
-     console.log('Default settings initialized');
  }
  
  /**
@@ -138,7 +133,6 @@
              playwrightLocatorSettings: settings
          });
          
-         console.log('Settings migrated successfully');
          
      } catch (error) {
          console.error('Settings migration failed:', error);
@@ -159,7 +153,6 @@
          // Pre-inject content scripts for better performance
          await ensureContentScriptInjected(tabId);
          
-         console.log(`Content script ready for: ${tab.url}`);
          
      } catch (error) {
          console.error(`Failed to inject content script for tab ${tabId}:`, error);
@@ -173,7 +166,6 @@
      try {
          const tab = await chrome.tabs.get(activeInfo.tabId);
          if (tab && isValidUrl(tab.url)) {
-             console.log(`Activated tab: ${tab.url}`);
              // Update extension badge or state if needed
              await updateExtensionState(tab);
          }
@@ -186,7 +178,6 @@
   * Message handler for inter-component communication
   */
  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-     console.log('Background received message:', request.action, 'from:', sender.tab?.url || 'extension');
      
      // Handle different message types
      switch (request.action) {
@@ -216,7 +207,6 @@
              
              
          case 'contentScriptReady':
-             console.log('Content script reported ready');
              return false;
              
          default:
@@ -228,7 +218,6 @@
  
 // Extension icon click handler - open/close side panel
 chrome.action.onClicked.addListener(async (tab) => {
-    console.log('Extension icon clicked for tab:', tab.url);
     
     try {
         // 检查 tab 是否有效
@@ -243,7 +232,6 @@ chrome.action.onClicked.addListener(async (tab) => {
         // 关键：先打开 side panel（在用户手势上下文中）
         try {
             await chrome.sidePanel.open({ tabId: tab.id });
-            console.log('Side panel opened successfully');
         } catch (sidePanelError) {
             console.error('Failed to open side panel:', sidePanelError);
             await showNotification(
@@ -255,7 +243,6 @@ chrome.action.onClicked.addListener(async (tab) => {
         
         // 然后在后台注入 content script（不阻塞 UI）
         ensureContentScriptInjected(tab.id).then(() => {
-            console.log('Content script ready');
         }).catch(error => {
             console.warn('Content script injection warning:', error.message);
             // 即使注入失败也不影响，用户打开页面时会自动注入
@@ -271,7 +258,6 @@ chrome.action.onClicked.addListener(async (tab) => {
   * Command handler for keyboard shortcuts
   */
  chrome.commands.onCommand.addListener(async (command) => {
-     console.log('Command received:', command);
      
      try {
          const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -325,7 +311,6 @@ chrome.action.onClicked.addListener(async (tab) => {
   */
  function handleSettingsChanged(settings) {
      cachedSettings = settings;
-     console.log('Settings updated in background');
      
      // Broadcast settings change to all extension pages
      broadcastMessage({ action: 'settingsUpdated', settings });
@@ -347,12 +332,10 @@ async function ensureContentScriptInjected(tabId) {
         // 尝试与现有 content script 通信
         const response = await chrome.tabs.sendMessage(tabId, { action: 'ping' }, {frameId: 0});
         if (response && response.status) {
-            console.log('Content script already active');
             return true; // Content script 已加载
         }
     } catch (error) {
         // Content script 未加载，需要注入
-        console.log('Content script not responding, will inject');
     }
     
     try {
@@ -370,7 +353,6 @@ async function ensureContentScriptInjected(tabId) {
             files: ['content/content.js']
         });
         
-        console.log(`Content script injected into tab ${tabId}`);
         
         // 等待 content script 初始化完成
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -451,7 +433,6 @@ async function ensureContentScriptInjected(tabId) {
  */
  async function handleLocatorGeneration(request, sendResponse) {
     try {
-        console.log('Forwarding locator generation to content script');
         
         // 获取当前活动标签页
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -657,21 +638,17 @@ async function ensureContentScriptInjected(tabId) {
  
  // Extension lifecycle handlers
  chrome.runtime.onStartup.addListener(() => {
-     console.log(`${EXTENSION_NAME} background script started`);
  });
  
  chrome.runtime.onSuspend.addListener(() => {
-     console.log(`${EXTENSION_NAME} background script suspending`);
  });
  
  chrome.runtime.onSuspendCanceled.addListener(() => {
-     console.log(`${EXTENSION_NAME} background script suspend cancelled`);
  });
  
  // Load cached settings on startup
  chrome.storage.sync.get('playwrightLocatorSettings').then(result => {
      cachedSettings = result.playwrightLocatorSettings;
-     console.log('Settings loaded into cache');
  }).catch(error => {
      console.error('Error loading settings:', error);
  });

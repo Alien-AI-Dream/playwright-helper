@@ -2,7 +2,8 @@
   "manifest_version": 3,
   "name": "Playwright Locator Helper",
   "version": "2.0.0",
-  "description": "Generate robust Playwright locators for web elements with advanced ARIA support and semantic analysis",
+  "description": "One-click Playwright locator generator with getByRole, getByLabel, getByText, CSS selectors, and live validation on any webpage.",
+  "homepage_url": "https://github.com/Alien-AI-Dream/playwright-helper",
   "author": "Alien Hu",
     
   "icons": {

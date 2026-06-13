@@ -20,7 +20,6 @@ class PageObjectUIManager {
         this.pageObjectManager = pageObjectManager;
         await this.pageObjectManager.initialize();
         this.bindEvents();
-        console.log('PageObjectUIManager initialized');
         return this;
     }
 
@@ -121,10 +120,8 @@ class PageObjectUIManager {
 
         // 显示对话框
         this.modal = document.getElementById('pageObjectModal');
-        console.log('[ShowModal] Modal element found:', !!this.modal);
         if (this.modal) {
             this.modal.style.display = 'flex';
-            console.log('[ShowModal] Modal display set to flex');
         } else {
             console.error('[ShowModal] Modal element not found!');
             throw new Error('Modal element not found');
@@ -697,7 +694,6 @@ class PageObjectUIManager {
     showToast(type, message) {
         const toastContainer = document.getElementById('toastContainer');
         if (!toastContainer) {
-            console.log(`[Toast ${type}]`, message);
             return;
         }
 
