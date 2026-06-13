@@ -1,0 +1,99 @@
+/* ============================================================
+   PLAYWRIGHT LOCATOR HELPER — CONTENT HIGHLIGHT STYLES
+   "Abyss Console" design language
+   Bioluminescent highlight with pulse animation
+   ============================================================ */
+
+/* —— Primary highlight ring —— */
+.playwright-locator-highlight {
+  outline: 2px solid #00e5ff !important;
+  outline-offset: 2px !important;
+  background-color: rgba(0, 229, 255, 0.08) !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  z-index: 999999 !important;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.2), 0 0 4px rgba(0, 229, 255, 0.15) !important;
+  border-radius: 2px !important;
+}
+
+/* —— Hover state — intensify glow —— */
+.playwright-locator-highlight.hovering {
+  outline-color: #00ff87 !important;
+  background-color: rgba(0, 255, 135, 0.08) !important;
+  box-shadow: 0 0 24px rgba(0, 255, 135, 0.3), 0 0 8px rgba(0, 255, 135, 0.2) !important;
+}
+
+/* —— Ambient outer ring —— */
+.playwright-locator-highlight::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 5px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.7;
+  animation: highlightPulse 2s ease-in-out infinite;
+}
+
+@keyframes highlightPulse {
+  0%, 100% { opacity: 0.4; border-color: rgba(0, 229, 255, 0.2); }
+  50%      { opacity: 0.8; border-color: rgba(0, 229, 255, 0.45); }
+}
+
+/* —— Dark mode —— */
+@media (prefers-color-scheme: dark) {
+  .playwright-locator-highlight {
+    outline-color: #00e5ff !important;
+    background-color: rgba(0, 229, 255, 0.06) !important;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.25), 0 0 6px rgba(0, 229, 255, 0.15) !important;
+  }
+  .playwright-locator-highlight::before {
+    border-color: rgba(0, 229, 255, 0.35);
+  }
+}
+
+/* —— High contrast —— */
+@media (prefers-contrast: high) {
+  .playwright-locator-highlight {
+    outline-width: 4px !important;
+    outline-color: #00ffff !important;
+    background-color: rgba(0, 255, 255, 0.15) !important;
+    box-shadow: 0 0 28px rgba(0, 255, 255, 0.35) !important;
+  }
+}
+
+/* —— Reduced motion —— */
+@media (prefers-reduced-motion: reduce) {
+  .playwright-locator-highlight { transition: none !important; }
+  .playwright-locator-highlight::before { animation: none !important; }
+}
+
+/* —— Hidden elements —— */
+.playwright-locator-highlight[style*="display: none"],
+.playwright-locator-highlight[hidden] {
+  outline: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* —— Table element adjustments —— */
+table .playwright-locator-highlight,
+tr.playwright-locator-highlight,
+td.playwright-locator-highlight,
+th.playwright-locator-highlight {
+  outline-offset: 0px !important;
+}
+
+/* —— Inline element adjustments —— */
+span.playwright-locator-highlight,
+a.playwright-locator-highlight,
+strong.playwright-locator-highlight,
+em.playwright-locator-highlight {
+  outline-offset: 1px !important;
+  padding: 2px !important;
+  margin: -2px !important;
+}

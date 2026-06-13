@@ -1,0 +1,402 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playwright Locator Helper</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <!-- Deep sea particle field (dark themes only) -->
+  <div class="particle-field" id="particleField" aria-hidden="true"></div>
+
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="header-icon pin-icon" aria-hidden="true"></div>
+        <h1 class="header-title">Playwright Locator Helper</h1>
+      </div>
+      <div class="version-badge">v2.0</div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <!-- Element Selection Section -->
+      <section class="section" aria-labelledby="selection-heading">
+        <h2 id="selection-heading" class="section-title">Element Selection</h2>
+        <div class="button-group">
+          <button 
+            id="selectBtn" 
+            class="btn btn-primary"
+            aria-describedby="select-btn-description"
+          >
+            <span class="btn-icon pin-icon" aria-hidden="true"></span>
+            Select Page Element
+          </button>
+          <div id="select-btn-description" class="sr-only">
+            Click to start element selection mode, then click on any element on the webpage
+          </div>
+        </div>
+        
+        <div 
+          class="status-panel" 
+          id="statusText" 
+          role="status" 
+          aria-live="polite"
+        >
+          Click the button above, then click on the target element on the page.
+        </div>
+      </section>
+      
+      <!-- Generated Locators Section -->
+      <section class="section" aria-labelledby="locators-heading">
+        <div class="section-header">
+          <h2 id="locators-heading" class="section-title">Generated Locators</h2>
+          <div class="locator-actions">
+            <button
+              id="addLocatorBtn"
+              class="btn btn-icon-sm"
+              title="Add manual locator"
+              aria-label="Add manual locator"
+            >
+              <span aria-hidden="true">+</span>
+            </button>
+            <button
+              id="copyBtn"
+              class="btn btn-icon-sm"
+              title="Copy all locators to clipboard"
+              aria-label="Copy locators to clipboard"
+            >
+              <span class="pin-icon" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="textarea-wrapper">
+          <div id="locatorOutput" class="locator-list" aria-describedby="locator-output-description">
+            <div class="locator-list-empty">Generated locators will appear here...</div>
+          </div>
+          <div id="locator-output-description" class="sr-only">
+            This area will show the generated Playwright locators after selecting an element
+          </div>
+        </div>
+        
+        <div class="locator-info">
+          <div class="info-item">
+            <span class="info-label">Total:</span>
+            <span id="locatorCount" class="info-value">0</span>
+            <span class="info-text">locators</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Best:</span>
+            <span class="info-value">get_by_role</span>
+            <span class="info-text">recommended</span>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Locator Validation Section -->
+      <section class="section" aria-labelledby="validation-heading">
+        <h2 id="validation-heading" class="section-title">Locator Validation</h2>
+        
+        <div class="input-group">
+          <label for="locatorInput" class="input-label">
+            Test Locator Expression
+          </label>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              id="locatorInput" 
+              class="locator-input"
+              placeholder="page.get_by_role('button', name='Submit')"
+              aria-describedby="locator-input-description"
+              autocomplete="off"
+              spellcheck="false"
+            >
+            <button 
+              id="clearInputBtn" 
+              class="btn btn-icon-xs"
+              title="Clear input"
+              aria-label="Clear input field"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div id="locator-input-description" class="input-description">
+            Enter a Playwright locator expression to test on the current page
+          </div>
+        </div>
+        
+        <div class="button-group">
+          <button 
+            id="validateBtn" 
+            class="btn btn-secondary"
+            aria-describedby="validate-btn-description"
+          >
+            <span class="btn-icon pin-icon" aria-hidden="true"></span>
+            Validate Locator
+          </button>
+          <div id="validate-btn-description" class="sr-only">
+            Test the locator expression and highlight the matching element on the page
+          </div>
+        </div>
+      </section>
+
+      <!-- PageObject Management Section -->
+      <section class="section section-compact" aria-labelledby="pageobject-heading">
+        <h2 id="pageobject-heading" class="section-title">PageObject Management</h2>
+        <div class="quick-actions">
+          <button id="viewPageObjectBtn" class="btn btn-outline" title="View PageObjects">
+            <span class="pin-icon" aria-hidden="true"></span>
+            View PageObjects
+          </button>
+          <button id="saveContainerBtn" class="btn btn-outline" title="Save Container to PageObject" disabled>
+            <span class="pin-icon" aria-hidden="true"></span>
+            Save Container
+          </button>
+          <button id="saveElementBtn" class="btn btn-outline" title="Save Element to PageObject" disabled>
+            <span class="pin-icon" aria-hidden="true"></span>
+            Save Element
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="keyboard-shortcuts">
+          <div class="shortcut-item">
+            <kbd>Ctrl</kbd>+<kbd>Enter</kbd> Validate
+          </div>
+          <div class="shortcut-item">
+            <kbd>Esc</kbd> Cancel
+          </div>
+        </div>
+        <div class="footer-links">
+          <a href="#" id="feedbackLink" class="footer-link">Feedback</a>
+          <a href="#" id="docsLink" class="footer-link">Docs</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Theme Switcher Button -->
+    <button
+      id="themeSwitcher"
+      class="theme-switcher"
+      title="Cycle theme (10 themes available)"
+      aria-label="Cycle through themes"
+    >
+      <span id="themeIcon" aria-hidden="true"></span>
+    </button>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" hidden>
+      <div class="loading-content">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <div class="loading-text">Processing...</div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true">
+    </div>
+
+    <!-- PageObject Modal -->
+    <!-- Save Element Modal -->
+    <div id="pageObjectModal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Save to PageObject</h3>
+            <button class="modal-close" id="closePageObjectModal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <!-- Select PageObject -->
+            <div class="form-group">
+              <label class="form-label">Select PageObject <span class="required">*</span></label>
+              <div class="page-select-row">
+                <select id="pageSelect" class="form-select">
+                  <option value="">-- Select PageObject --</option>
+                </select>
+                <button class="btn btn-icon-sm" id="refreshPageList" title="Refresh page list">
+                  <span class="pin-icon" aria-hidden="true"></span>
+                </button>
+              </div>
+              <div class="input-description">Select an existing PageObject to save the element to</div>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Element info input -->
+            <div class="form-group">
+              <label class="form-label">Element Name <span class="required">*</span></label>
+              <input type="text" id="elementName" class="form-input" placeholder="e.g., usernameInput">
+              <div class="input-description">Use camelCase naming convention</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Element Type</label>
+              <select id="elementType" class="form-select">
+                <option value="input">Input</option>
+                <option value="button">Button</option>
+                <option value="text">Text</option>
+                <option value="link">Link</option>
+                <option value="checkbox">Checkbox</option>
+                <option value="radio">Radio</option>
+                <option value="select">Select</option>
+                <option value="container">Container</option>
+                <option value="iframe">Iframe</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description (optional)</label>
+              <textarea id="elementDescription" class="form-textarea" rows="2" placeholder="Describe what this element is used for"></textarea>
+            </div>
+
+            <!-- Generated locator preview -->
+            <div class="form-group">
+              <label class="form-label">Generated Locators</label>
+              <div class="locator-preview" id="locatorPreview">
+                <div class="locator-preview-item">No locators generated yet</div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelSaveElement">Cancel</button>
+            <button class="btn btn-primary" id="confirmSaveElement">Save Element</button>
+          </div>
+        </div>
+      </div>
+
+    <!-- Save Container Modal -->
+    <div id="saveContainerModal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Save Container to PageObject</h3>
+            <button class="modal-close" id="closeSaveContainerModal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <!-- Select PageObject -->
+            <div class="form-group">
+              <label class="form-label">Select PageObject <span class="required">*</span></label>
+              <div class="page-select-row">
+                <select id="containerPageSelect" class="form-select">
+                  <option value="">-- Select PageObject --</option>
+                </select>
+                <button class="btn btn-icon-sm" id="refreshContainerPageList" title="Refresh page list">
+                  <span class="pin-icon" aria-hidden="true"></span>
+                </button>
+              </div>
+              <div class="input-description">Select an existing PageObject to save the container to</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Container Locators</label>
+              <div class="locator-preview" id="containerLocatorPreview">
+                <div class="locator-preview-item">No locators generated yet</div>
+              </div>
+              <div class="input-description">These locators will be used to locate the container element</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description (optional)</label>
+              <textarea id="containerDescription" class="form-textarea" rows="2" placeholder="Describe the container (e.g., 'Main login form container')"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelSaveContainer">Cancel</button>
+            <button class="btn btn-primary" id="confirmSaveContainer">Save Container</button>
+          </div>
+        </div>
+      </div>
+
+    <!-- PageObject Viewer Modal -->
+    <div id="pageObjectViewerModal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+          <div class="modal-header">
+            <h3 class="modal-title">PageObject Viewer</h3>
+            <button class="modal-close" id="closePageObjectViewer">&times;</button>
+          </div>
+          <div class="modal-body">
+            <!-- Toolbar -->
+            <div class="viewer-toolbar">
+              <select id="viewerPageSelect" class="form-select">
+                <option value="">-- Select PageObject --</option>
+              </select>
+              <div class="toolbar-buttons">
+                <button class="btn btn-outline" id="createPageObjectBtn" title="Create new PageObject">
+                  <span aria-hidden="true">+</span> New
+                </button>
+                <button class="btn btn-outline" id="exportJsonBtn" title="Export JSON">
+                  <span class="pin-icon" aria-hidden="true"></span> Export
+                </button>
+                <button class="btn btn-outline" id="importJsonBtn" title="Import JSON">
+                  <span class="pin-icon" aria-hidden="true"></span> Import
+                </button>
+                <button class="btn btn-outline" id="refreshViewerBtn" title="Refresh">
+                  <span class="pin-icon" aria-hidden="true"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Create new PageObject section -->
+            <div id="createPageObjectSection" class="create-pageobject-section" style="display: none;">
+              <h4 class="section-subtitle">Create New PageObject</h4>
+              <div class="form-group">
+                <label class="form-label">PageObject Name <span class="required">*</span></label>
+                <div class="input-row">
+                  <input type="text" id="newPageNameViewer" class="form-input" placeholder="e.g., LoginPage">
+                  <button class="btn btn-primary" id="createPageViewerBtn">Create</button>
+                  <button class="btn btn-secondary" id="cancelCreatePageViewerBtn">Cancel</button>
+                </div>
+                <div class="input-description">Use PascalCase naming convention, must start with a letter</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Page URL (optional)</label>
+                <input type="text" id="pageUrlViewer" class="form-input" placeholder="e.g., /login">
+              </div>
+            </div>
+
+            <!-- JSON content display -->
+            <div class="json-viewer-container">
+              <div class="json-viewer-header">
+                <span class="json-viewer-title">JSON Preview</span>
+                <button class="btn btn-icon-sm" id="copyJsonBtn" title="Copy JSON">
+                  <span class="pin-icon" aria-hidden="true"></span>
+                </button>
+              </div>
+              <pre id="jsonViewerContent" class="json-viewer-content"></pre>
+            </div>
+
+            <!-- Element list -->
+            <div class="elements-list-container">
+              <h4 class="elements-list-title">Elements</h4>
+              <div id="elementsList" class="elements-list">
+                <div class="empty-state">Select a PageObject to view elements</div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="closeViewerBtn">Close</button>
+          </div>
+        </div>
+      </div>
+
+    <!-- Hidden file input for importing JSON -->
+    <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
+  </div>
+
+  <script src="pageObjectManager.js"></script>
+  <script src="pageObjectUI.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>
