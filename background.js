@@ -495,12 +495,15 @@ async function ensureContentScriptInjected(tabId) {
   */
  async function showNotification(title, message, iconUrl = 'images/icon48.png') {
      try {
-         await chrome.notifications.create({
+         if (chrome.notifications) {
+
+             await chrome.notifications.create({
              type: 'basic',
              iconUrl: iconUrl,
              title: title,
              message: message
          });
+        }
      } catch (error) {
          console.error('Error showing notification:', error);
      }

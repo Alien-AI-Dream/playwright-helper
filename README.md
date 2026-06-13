@@ -116,3 +116,11 @@ Alien Hu
 ## License
 
 MIT
+
+## Privacy
+
+This extension does **not** collect, transmit, or store any personal or browsing data.
+
+- **User preferences** (locator strategies, theme) are stored locally via chrome.storage.sync for cross-device synchronization and are never shared with any third party.
+- **PageObject data** is stored locally via chrome.storage.local and remains entirely on your device.
+- **Host permissions** (<all_urls>) are required solely to inspect DOM elements on the active page for Playwright locator generation — all processing happens in-browser. No page content is recorded or transmitted.
