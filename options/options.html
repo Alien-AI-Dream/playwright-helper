@@ -1,15 +1,288 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Playwright Locator Helper - Options</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h1 { color: #2563eb; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playwright Locator Helper — Settings</title>
+  <style>
+    :root {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-hover: #f1f5f9;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --accent: #4d7cff;
+      --accent-hover: #3b61f2;
+      --accent-bg: rgba(77, 124, 255, 0.08);
+      --danger: #ef4444;
+      --danger-bg: #fef2f2;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      --radius: 8px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --bg-hover: #334155;
+        --text-primary: #e2e8f0;
+        --text-secondary: #94a3b8;
+        --border: #334155;
+        --accent-bg: rgba(77, 124, 255, 0.12);
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-width: 420px;
+      max-width: 480px;
+      font-size: 13px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container { padding: 20px; }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .header-icon { font-size: 22px; }
+    .header-title { font-size: 15px; font-weight: 600; }
+    .header-version { font-size: 11px; color: var(--text-secondary); background: var(--border); padding: 2px 6px; border-radius: 4px; }
+
+    .section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--bg-primary);
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-label {
+      font-weight: 500;
+      flex: 1;
+    }
+    .setting-hint {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-slider::after {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::after { transform: translateX(18px); }
+
+    .select {
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 12px;
+      width: 140px;
+      cursor: pointer;
+    }
+    .select:focus { outline: none; border-color: var(--accent); }
+
+    .input-number {
+      width: 64px;
+      padding: 4px 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 12px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .input-number:focus { outline: none; border-color: var(--accent); }
+
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 10;
+    }
+    .toast.visible { opacity: 1; }
+
+    .footer {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+  </style>
 </head>
 <body>
-    <h1>⚙️ Settings</h1>
-    <script src="options.js"></script>
+  <div class="container">
+    <div class="header">
+      <span class="header-icon">🎯</span>
+      <span class="header-title">Playwright Locator Helper</span>
+      <span class="header-version">v2.0</span>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Locator Strategies</div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">getByRole</div>
+          <div class="setting-hint">ARIA role + accessible name (recommended)</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="preferGetByRole" checked><span class="toggle-slider"></span></label>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">getByLabel</div>
+          <div class="setting-hint">Form elements by label text</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="preferGetByLabel" checked><span class="toggle-slider"></span></label>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">getByText</div>
+          <div class="setting-hint">Elements by visible text content</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="preferGetByText" checked><span class="toggle-slider"></span></label>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">getByTitle</div>
+          <div class="setting-hint">Elements by title attribute</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="preferGetByTitle"><span class="toggle-slider"></span></label>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Data Attributes</div>
+          <div class="setting-hint">data-testid, data-test, data-cy, data-qa</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="preferDataAttributes" checked><span class="toggle-slider"></span></label>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">CSS Selectors</div>
+          <div class="setting-hint">Fallback class/id selectors</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="preferCssSelectors"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Advanced</div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Max Text Length</div>
+          <div class="setting-hint">Truncate long text in locators</div>
+        </div>
+        <input type="number" id="maxTextLength" class="input-number" min="20" max="500" value="100">
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Use Exact Match</div>
+          <div class="setting-hint">Prefer exact text matching by default</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="useExactMatch"><span class="toggle-slider"></span></label>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">XPath Support</div>
+          <div class="setting-hint">Include XPath as a fallback strategy</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="enableXPathSupport"><span class="toggle-slider"></span></label>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">PageObject Code</div>
+          <div class="setting-hint">Generate page. prefix and class syntax</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="generatePageObjectCode"><span class="toggle-slider"></span></label>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Validation Timeout</div>
+          <div class="setting-hint">Seconds before locator validation fails</div>
+        </div>
+        <input type="number" id="validationTimeout" class="input-number" min="1" max="30" value="5">
+      </div>
+    </div>
+
+    <div class="footer">
+      Settings auto-save and sync across devices via Chrome Sync.
+    </div>
+
+    <div class="toast" id="toast">Settings saved</div>
+  </div>
+
+  <script src="options.js"></script>
 </body>
 </html>
