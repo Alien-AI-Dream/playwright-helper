@@ -284,7 +284,6 @@
       handleConnectionError(response);
     }
   });
-  });
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "elementSelected") {
@@ -323,7 +322,7 @@
       updateStatus('Validation error: ' + error.message);
       showToast('error', 'Validation error: ' + error.message);
     }
-  }););
+  });
 
   copyBtn.addEventListener('click', async () => {
     if (!locatorOutput.value) {
@@ -781,6 +780,8 @@
   window.addManualLocatorInput = addManualLocatorInput;
 
 });
+
+
 
 
 
