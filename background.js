@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Background Script (Service Worker) for Playwright Locator Helper
  * Handles extension lifecycle, tab management, and inter-component communication
  */
@@ -241,6 +241,16 @@ chrome.action.onClicked.addListener(async (tab) => {
             return; // 如果打开失败就直接返回
         }
         
+        // Send the anchored tab ID to the side panel so it always targets the right tab.
+        // The side panel itself can't know which tab it was opened for without this handshake.
+        chrome.runtime.sendMessage({
+            action: "initSidePanel",
+            tabId: tab.id,
+            url: tab.url
+        }).catch(() => {
+            // Side panel may not be listening yet; no problem.
+        });
+        
         // 然后在后台注入 content script（不阻塞 UI）
         ensureContentScriptInjected(tab.id).then(() => {
         }).catch(error => {
@@ -434,14 +444,17 @@ async function ensureContentScriptInjected(tabId) {
  async function handleLocatorGeneration(request, sendResponse) {
     try {
         
-        // 获取当前活动标签页
-        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tabs || tabs.length === 0) {
-            sendResponse({ success: false, error: 'No active tab found' });
-            return;
+        // Use the tab ID passed from the side panel if available,
+        // falling back to querying the active tab
+        let tabId = request.tabId;
+        if (!tabId) {
+            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (!tabs || tabs.length === 0) {
+                sendResponse({ success: false, error: 'No active tab found' });
+                return;
+            }
+            tabId = tabs[0].id;
         }
-        
-        const tabId = tabs[0].id;
         
         // 转发到 content script 进行生成
         chrome.tabs.sendMessage(tabId, {
@@ -655,3 +668,5 @@ async function ensureContentScriptInjected(tabId) {
  }).catch(error => {
      console.error('Error loading settings:', error);
  });
+
+

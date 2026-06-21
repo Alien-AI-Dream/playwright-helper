@@ -1,4 +1,48 @@
-document.addEventListener('DOMContentLoaded', function () {
+﻿document.addEventListener('DOMContentLoaded', function () {
+
+  // =====================================================
+  // CONNECTION MANAGER -- receives tab ID from background
+  // =====================================================
+  let anchoredTabId = null;
+  let anchoredTabUrl = null;
+
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'initSidePanel') {
+      anchoredTabId = request.tabId;
+      anchoredTabUrl = request.url;
+      updateStatus('Ready. Click Select Page Element to begin.');
+      chrome.runtime.sendMessage({ action: 'getTabInfo' }, (response) => {
+        if (response && response.success) {
+          anchoredTabId = response.tab.id;
+          anchoredTabUrl = response.tab.url;
+        }
+      });
+      return false;
+    }
+  });
+
+  async function ensureTabAnchor() {
+    if (anchoredTabId) return anchoredTabId;
+    try {
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tabs && tabs.length > 0 && tabs[0].id) {
+        anchoredTabId = tabs[0].id;
+        anchoredTabUrl = tabs[0].url;
+        return anchoredTabId;
+      }
+    } catch (e) { /* fall through */ }
+    return new Promise((resolve) => {
+      chrome.runtime.sendMessage({ action: 'getTabInfo' }, (response) => {
+        if (response && response.success) {
+          anchoredTabId = response.tab.id;
+          anchoredTabUrl = response.tab.url;
+          resolve(anchoredTabId);
+        } else {
+          resolve(null);
+        }
+      });
+    });
+  }
 
   // =====================================================
   // THEME MANAGER — 10-theme cycling system
@@ -234,9 +278,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const response = await sendMessageToContentScript("startSelecting");
     if (response && response.status === "selection_started") {
       updateUI(true, MESSAGES.SELECT_ELEMENT);
+    } else if (response === 'restricted') {
+      handleConnectionError('restricted');
     } else {
       handleConnectionError(response);
     }
+  });
   });
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -266,17 +313,17 @@ document.addEventListener('DOMContentLoaded', function () {
         updateStatus(MESSAGES.VALIDATION_SUCCESS);
         showToast('success', 'Element found and highlighted!');
       } else if (response && response.error) {
-        updateStatus(`${MESSAGES.VALIDATION_ERROR}: ${response.error}`);
+        updateStatus(MESSAGES.VALIDATION_ERROR + ': ' + response.error);
         showToast('error', response.error);
       } else {
         handleConnectionError(response);
       }
     } catch (error) {
       console.error('Error validating locator:', error);
-      updateStatus(`Validation error: ${error.message}`);
-      showToast('error', `Validation error: ${error.message}`);
+      updateStatus('Validation error: ' + error.message);
+      showToast('error', 'Validation error: ' + error.message);
     }
-  });
+  }););
 
   copyBtn.addEventListener('click', async () => {
     if (!locatorOutput.value) {
@@ -311,10 +358,16 @@ document.addEventListener('DOMContentLoaded', function () {
     statusText.textContent = message;
   }
 
-  function handleConnectionError(response) {
+    function handleConnectionError(response) {
     if (response === null) {
       updateUI(false, MESSAGES.CONNECTION_ERROR);
-      showToast('error', 'Connection failed');
+      showToast('error', 'Connection failed. Please refresh the page and try again.');
+    } else if (response === 'restricted') {
+      updateUI(false, 'Cannot use on this page type.');
+      showToast('error', 'Please open a normal webpage to use this extension.');
+    } else if (response === 'timeout') {
+      updateUI(false, 'Page still loading. Wait a moment and try again.');
+      showToast('error', 'Page not ready yet. Wait and retry.');
     } else {
       updateUI(false, "Failed to start selection mode.");
       showToast('error', 'Selection mode failed');
@@ -324,26 +377,24 @@ document.addEventListener('DOMContentLoaded', function () {
   async function sendMessageToContentScript(action) {
     return new Promise(async (resolve) => {
       try {
-        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tabs || tabs.length === 0) {
+        const tabId = await ensureTabAnchor();
+        if (!tabId) {
+          resolve('restricted');
+          return;
+        }
+
+        if (anchoredTabUrl && isRestrictedPage(anchoredTabUrl)) {
+          resolve('restricted');
+          return;
+        }
+
+        const injected = await ensureContentScriptInjected(tabId);
+        if (!injected) {
           resolve(null);
           return;
         }
 
-        const activeTab = tabs[0];
-        if (!activeTab || !activeTab.id || isRestrictedPage(activeTab.url)) {
-          resolve(null);
-          return;
-        }
-
-        try {
-          await ensureContentScriptInjected(activeTab.id);
-        } catch (e) {
-          resolve(null);
-          return;
-        }
-
-        chrome.tabs.sendMessage(activeTab.id, action, {frameId: 0}, (response) => {
+        chrome.tabs.sendMessage(tabId, action, {frameId: 0}, (response) => {
           if (chrome.runtime.lastError) {
             resolve(null);
           } else {
@@ -360,14 +411,27 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
       const response = await chrome.tabs.sendMessage(tabId, { action: 'ping' }, {frameId: 0});
       if (response && response.status) return true;
-    } catch (e) {}
+    } catch (e) { /* not loaded */ }
 
-    await chrome.scripting.executeScript({
-      target: { tabId: tabId },
-      files: ['content/content.js']
-    });
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return true;
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        files: ['content/content.js']
+      });
+    } catch (e) {
+      console.error('Content script injection failed:', e);
+      return false;
+    }
+
+    const deadline = Date.now() + 3000;
+    while (Date.now() < deadline) {
+      try {
+        const resp = await chrome.tabs.sendMessage(tabId, { action: 'ping' }, {frameId: 0});
+        if (resp && resp.status) return true;
+      } catch (e) { /* still init */ }
+      await new Promise(r => setTimeout(r, 200));
+    }
+    return false;
   }
 
   function isRestrictedPage(url) {
@@ -389,7 +453,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     chrome.runtime.sendMessage({
       action: "generateLocators",
-      elementInfo: elementData
+      elementInfo: elementData,
+      tabId: anchoredTabId
     }, (response) => {
       if (chrome.runtime.lastError) {
         updateStatus("Error: " + chrome.runtime.lastError.message);
@@ -716,3 +781,9 @@ document.addEventListener('DOMContentLoaded', function () {
   window.addManualLocatorInput = addManualLocatorInput;
 
 });
+
+
+
+
+
+
